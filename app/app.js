@@ -100,6 +100,7 @@ io.on('connection', socket => {
     });
 });
 
-// app.use('/auth', authRoute);
+app.use('/auth', authRoute);
+
 console.log(`Node env: ${process.env.NODE_ENV}`);
 server.listen(PORT, () => console.log(`Listen on :${PORT}`));
