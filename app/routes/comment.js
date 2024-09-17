@@ -83,5 +83,10 @@ router
         ),
         asyncRoute(commentContorller.deleteAllComments)
     );
-
+router
+    .route('/getCommentWorkload/:workloadId')
+    .get(
+        asyncRoute(checkRole([role.DEPARTMENT_HEAD, role.DIRECTORATE, role.METHODIST, role.LECTURER, role.EDUCATOR])),
+        asyncRoute(commentContorller.getCommentsWorkload)
+    );
 export default router;

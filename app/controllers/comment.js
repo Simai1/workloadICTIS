@@ -82,4 +82,18 @@ export default {
         }
         res.send('All comments deleted');
     },
+
+    async getCommentsWorkload({ params: { workloadId } }, res) {
+        const comments = await Comment.findAll({ where: { workloadId }, include: { model: Educator } });
+        if (comments.length === 0) {
+            res.send('No comments found for the specified workload');
+            return;
+        }
+        const commentDtos = [];
+        for (const comment of comments) {
+            const commentDto = new CommentDto(comment);
+            commentDtos.push(commentDto);
+        }
+        res.json(commentDtos);
+    },
 };

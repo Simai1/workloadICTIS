@@ -161,12 +161,45 @@ io.on('connection', socket => {
         socket.emit('response', 'data received');
     });
 
-    // upon disconnection
+    let editingUser = null;
+
+    // Обработчик события начала редактирования
+    socket.on('startEditing', () => {
+        // Если никто не редактирует систему в данный момент
+        if (!editingUser) {
+            // Запоминаем пользователя, который начал редактирование
+            editingUser = socket.id;
+            // Отправляем уведомление всем остальным пользователям о блокировке системы
+            socket.broadcast.emit('systemLocked');
+        } else {
+            // Если кто-то уже редактирует систему, отправляем уведомление только текущему пользователю
+            socket.emit('systemLocked');
+        }
+    });
+
+    // Обработчик события окончания редактирования
+    socket.on('stopEditing', () => {
+        // Проверяем, что пользователь, отправивший событие, действительно редактировал систему
+        if (socket.id === editingUser) {
+            // Сбрасываем информацию о пользователе, который редактировал систему
+            editingUser = null;
+            // Отправляем уведомление всем остальным пользователям о разблокировке системы
+            socket.broadcast.emit('systemUnlocked');
+        }
+    });
+
+    // Обработчик отключения пользователя
     socket.on('disconnect', reason => {
+        // Если отключается пользователь, который редактировал систему, разблокируем систему для всех
+        if (socket.id === editingUser) {
+            editingUser = null;
+            socket.broadcast.emit('systemUnlocked');
+        }
         console.log(`socket ${socket.id} disconnected due to ${reason}`);
     });
 });
 
-// app.use('/auth', authRoute);
+app.use('/auth', authRoute);
+
 console.log(`Node env: ${process.env.NODE_ENV}`);
 server.listen(PORT, () => console.log(`Listen on :${PORT}`));
